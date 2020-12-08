@@ -9,4 +9,4 @@ app.get('/csv', (req, res) => {
 app.get('/', (req, res) => {
     res.sendFile(__dirname + "/view.html")
 })
-app.listen(5000);
+app.listen(process.env.PORT || 5000);
