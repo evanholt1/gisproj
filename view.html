@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+    <title>CSVLayer - 4.9</title>
+
+    <style>
+        html,
+        body {
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+        }
+        
+        #selectDiv {
+            padding: 0;
+            margin: 0;
+            height: 10%;
+            width: 100%;
+        }
+        
+        #viewDiv {
+            padding: 0;
+            margin: 0;
+            height: 80%;
+            width: 100%;
+        }
+    </style>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.9/esri/css/main.css">
+    <script src="https://js.arcgis.com/4.9/"></script>
+
+    <script>
+        require([
+            "esri/Map",
+            "esri/layers/CSVLayer",
+            "esri/views/MapView",
+            "esri/core/urlUtils"
+        ], function(
+            Map,
+            CSVLayer,
+            MapView,
+            urlUtils
+        ) {
+
+            // If CSV files are not on the same domain as your website, a CORS enabled server
+            // or a proxy is required.
+            var url =
+                "./hurricanes.csv";
+
+            // in the CSV file. These attributes include:
+            // * mag - magnitude
+            // * type - earthquake or other event such as nuclear test
+            // * place - location of the event
+            // * time - the time of the event
+            /*
+                  The longitude field name. If not specified, the API will look for following field names in the CSV source: 
+                  "lon", "lng", "long", "longitude", "x", "xcenter", "longitude83", "longdecdeg", "POINT-X".
+            */
+
+            var template = {
+                title: "Earthquake Info",
+                content: "Magnitude {mag} {type} hit {place} on {time}."
+            };
+
+            var csvLayer = new CSVLayer({
+                url: url,
+                copyright: "USGS Earthquakes",
+                popupTemplate: template,
+                // Query
+                /////// definitionExpression: "mag > 4.9"
+            });
+            // OR Set the definition expression directly on layer instance after it has loaded
+            //csvLayer.definitionExpression = "mag >= 5";
+            csvLayer.definitionExpression = "Category >= 1";
+
+            // var sizeVisVar = {
+            //     type: "size",
+            //     field: "mag",
+            //     valueUnit: "unknown",
+            //     stops: [{
+            //             value: 3,
+            //             size: 6
+            //         }, {
+            //             value: 6,
+            //             size: 30
+            //         }
+
+            //     ]
+            // }
+
+
+            csvLayer.renderer = {
+                type: "simple", // autocasts as new SimpleRenderer()
+                symbol: {
+                    type: "simple-marker", // autocasts as new PointSymbol3D()
+                    color: [250, 250, 10],
+                    outline: {
+                        color: [255, 128, 128],
+                        width: 0.5
+                    }
+                },
+                //label: "magnitude of ...",
+                // set the color and size visual variables on the renderer
+
+                //visualVariables: [sizeVisVar]
+            };
+
+            var map = new Map({
+                basemap: "topo-vector",
+                layers: [csvLayer]
+            });
+
+            var view = new MapView({
+                container: "viewDiv",
+                center: [138, 35],
+                zoom: 3,
+                map: map
+            });
+
+        }); // require
+    </script>
+</head>
+
+<body>
+    <div class='container-fluid m-4' id="selectDiv">
+        <div class="row">
+            <div class="col-lg-1">
+                <h2>Filters</h2>
+            </div>
+            <div class="col-lg-2">
+                <select name="" id="" class="form-select">
+                    <option selected value="">Category</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                </select>
+            </div>
+            <div class="col-lg-2">
+                <select name="" id="" class="form-select">
+                    <option selected value="">Nature</option>
+                    <option value="TS">TS</option>
+                    <option value="SS">SS</option>
+                    <option value="3">ET</option>
+                    <option value="4">NR</option>
+                </select>
+            </div>
+            <div class="col-lg-2">
+                <label for="">Minimum Year</label>
+                <input type="range" value="1950" min="1950" max="2015" oninput="this.nextElementSibling.value = this.value">
+                <output>1950</output>
+            </div>
+            <div class="col-lg-1">
+                <button type="button" class='btn btn-danger'>Apply</button>
+            </div>
+            <div class="col-lg-1">
+                <button type="button" class="btn btn-secondary">Clear</button>
+            </div>
+
+        </div>
+        <hr style="width: 50%; margin-left: 25%;">
+        <div class="row"></div>
+
+    </div>
+    <div id="viewDiv"></div>
+</body>
+
+</html>
