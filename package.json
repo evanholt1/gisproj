@@ -1,0 +1,25 @@
+{
+    "name": "proj",
+    "version": "1.0.0",
+    "description": "��#\u0000 \u0000g\u0000i\u0000s\u0000p\u0000r\u0000o\u0000j\u0000\r\u0000 \u0000",
+    "main": "index.js",
+    "scripts": {
+        "start": "node index",
+        "dev": "nodemon index"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/evanholt1/gisproj.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/evanholt1/gisproj/issues"
+    },
+    "homepage": "https://github.com/evanholt1/gisproj#readme",
+    "dependencies": {
+        "express": "^4.17.1",
+        "nodemon": "^2.0.6"
+    }
+}

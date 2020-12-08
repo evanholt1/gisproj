@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
-    <title>CSVLayer - 4.9</title>
+    <title>Hurricane Map</title>
 
     <style>
         html,
@@ -13,19 +13,20 @@
             margin: 0;
             height: 100%;
             width: 100%;
+            overflow: hidden;
         }
         
         #selectDiv {
             padding: 0;
             margin: 0;
-            height: 10%;
+            height: 20%;
             width: 100%;
         }
         
         #viewDiv {
             padding: 0;
             margin: 0;
-            height: 80%;
+            height: 70%;
             width: 100%;
         }
     </style>
@@ -37,64 +38,38 @@
     <script src="https://js.arcgis.com/4.9/"></script>
 
     <script>
+        let query = "";
+        let csvLayer;
         require([
             "esri/Map",
             "esri/layers/CSVLayer",
-            "esri/views/MapView",
-            "esri/core/urlUtils"
+            "esri/views/SceneView",
+            "esri/core/urlUtils",
+            "dojo/domReady"
         ], function(
             Map,
             CSVLayer,
-            MapView,
+            SceneView,
             urlUtils
         ) {
+            document.getElementById("Apply").addEventListener("click", changeQuery);
+            document.getElementById("Clear").addEventListener("click", changeQuery);
 
-            // If CSV files are not on the same domain as your website, a CORS enabled server
-            // or a proxy is required.
             var url =
-                "./hurricanes.csv";
-
-            // in the CSV file. These attributes include:
-            // * mag - magnitude
-            // * type - earthquake or other event such as nuclear test
-            // * place - location of the event
-            // * time - the time of the event
-            /*
-                  The longitude field name. If not specified, the API will look for following field names in the CSV source: 
-                  "lon", "lng", "long", "longitude", "x", "xcenter", "longitude83", "longdecdeg", "POINT-X".
-            */
+                "http://localhost:5000/csv";
 
             var template = {
-                title: "Earthquake Info",
+                title: "Hurricane Info",
                 content: "Magnitude {mag} {type} hit {place} on {time}."
             };
 
-            var csvLayer = new CSVLayer({
+            csvLayer = new CSVLayer({
                 url: url,
                 copyright: "USGS Earthquakes",
                 popupTemplate: template,
-                // Query
-                /////// definitionExpression: "mag > 4.9"
             });
-            // OR Set the definition expression directly on layer instance after it has loaded
-            //csvLayer.definitionExpression = "mag >= 5";
-            csvLayer.definitionExpression = "Category >= 1";
 
-            // var sizeVisVar = {
-            //     type: "size",
-            //     field: "mag",
-            //     valueUnit: "unknown",
-            //     stops: [{
-            //             value: 3,
-            //             size: 6
-            //         }, {
-            //             value: 6,
-            //             size: 30
-            //         }
-
-            //     ]
-            // }
-
+            csvLayer.definitionExpression = query;
 
             csvLayer.renderer = {
                 type: "simple", // autocasts as new SimpleRenderer()
@@ -106,36 +81,57 @@
                         width: 0.5
                     }
                 },
-                //label: "magnitude of ...",
-                // set the color and size visual variables on the renderer
-
-                //visualVariables: [sizeVisVar]
             };
 
             var map = new Map({
                 basemap: "topo-vector",
-                layers: [csvLayer]
+                layers: [csvLayer],
+                ground: "world-elevation"
             });
 
-            var view = new MapView({
+            var view = new SceneView({
                 container: "viewDiv",
                 center: [138, 35],
-                zoom: 3,
+                scale: 50000000,
                 map: map
             });
+        });
 
-        }); // require
+        function baseMapSelect() {
+            console.log(map);
+
+        }
+
+        function changeQuery() {
+            console.log(csvLayer)
+            buttonId = event.target.id;
+            if (buttonId == "Apply") {
+                query = `year >= ${String(document.getElementById("MinYear").value)} `;
+                if (document.getElementById("Category").value)
+                    query += `and Category = ${String(document.getElementById("Category").value)}`;
+                if (document.getElementById("Nature").value)
+                    query += ` and Nature = ' ${String(document.getElementById("Nature").value)}' `;
+
+                console.log(document.getElementById("Category").value);
+                console.log(document.getElementById("Nature").value);
+                console.log(document.getElementById("MinYear").value);
+            } else if (buttonId == "Clear") {
+                query = "year >= 1950";
+            }
+            csvLayer.definitionExpression = query;
+            console.log(csvLayer.definitionExpression)
+        }
     </script>
 </head>
 
 <body>
-    <div class='container-fluid m-4' id="selectDiv">
-        <div class="row">
+    <div class='container-fluid' id="selectDiv">
+        <div class="row m-4">
             <div class="col-lg-1">
                 <h2>Filters</h2>
             </div>
             <div class="col-lg-2">
-                <select name="" id="" class="form-select">
+                <select name="Category" id="Category" class="form-select">
                     <option selected value="">Category</option>
                     <option value="1">1</option>
                     <option value="2">2</option>
@@ -145,24 +141,24 @@
                 </select>
             </div>
             <div class="col-lg-2">
-                <select name="" id="" class="form-select">
+                <select name="Nature" id="Nature" class="form-select">
                     <option selected value="">Nature</option>
                     <option value="TS">TS</option>
                     <option value="SS">SS</option>
-                    <option value="3">ET</option>
-                    <option value="4">NR</option>
+                    <option value="ET">ET</option>
+                    <option value="NR">NR</option>
                 </select>
             </div>
             <div class="col-lg-2">
-                <label for="">Minimum Year</label>
-                <input type="range" value="1950" min="1950" max="2015" oninput="this.nextElementSibling.value = this.value">
+                <label for="MinYear">Minimum Year</label>
+                <input name="MinYear" id="MinYear" type="range" value="1950" min="1950" max="2015" oninput="this.nextElementSibling.value = this.value">
                 <output>1950</output>
             </div>
             <div class="col-lg-1">
-                <button type="button" class='btn btn-danger'>Apply</button>
+                <button id="Apply" type="button" class='btn btn-danger'>Apply</button>
             </div>
             <div class="col-lg-1">
-                <button type="button" class="btn btn-secondary">Clear</button>
+                <button id="Clear" type="button" class="btn btn-secondary">Clear</button>
             </div>
 
         </div>
