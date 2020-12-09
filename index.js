@@ -1,7 +1,10 @@
 const express = require('express')
 const path = require('path')
+var cors = require('cors')
 
 const app = express();
+
+app.use(cors())
 
 app.get('/hurricane', (req, res) => {
     res.download(__dirname + '/hurricanes.csv');
