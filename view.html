@@ -39,9 +39,9 @@
 
     <script>
         let hurricaneQuery = "";
-        let earthquakeQuery = "";
+        //let earthquakeQuery = "";
         let hurricaneCsvLayer;
-        let earthquakeCsvLayer;
+        //let earthquakeCsvLayer;
 
         require([
             "esri/Map",
@@ -74,31 +74,32 @@
                 }
             });
 
-            earthquakeCsvLayer = new CSVLayer({
-                url: "https://gisproj.herokuapp.com/earthquake",
-                popupTemplate: {
-                    title: "Earthquake Info",
-                    content: "Magnitude {mag} {type} hit {place} on {time}."
-                },
-                renderer: {
-                    type: "simple",
-                    symbol: {
-                        type: "simple-marker",
-                        color: [250, 15, 10],
-                        outline: {
-                            color: [0, 0, 0],
-                            width: 0.5
-                        }
-                    },
-                }
-            })
+            // earthquakeCsvLayer = new CSVLayer({
+            //     url: "https://gisproj.herokuapp.com/earthquake",
+            //     popupTemplate: {
+            //         title: "Earthquake Info",
+            //         content: "Magnitude {mag} {type} hit {place} on {time}."
+            //     },
+            //     renderer: {
+            //         type: "simple",
+            //         symbol: {
+            //             type: "simple-marker",
+            //             color: [250, 15, 10],
+            //             outline: {
+            //                 color: [0, 0, 0],
+            //                 width: 0.5
+            //             }
+            //         },
+            //     }
+            // })
 
             hurricaneCsvLayer.definitionExpression = hurricaneQuery;
-            earthquakeCsvLayer.definitionExpression = earthquakeQuery;
+            //earthquakeCsvLayer.definitionExpression = earthquakeQuery;
 
             var map = new Map({
                 basemap: "topo-vector",
-                layers: [hurricaneCsvLayer, earthquakeCsvLayer],
+                //layers: [hurricaneCsvLayer, earthquakeCsvLayer],
+                layers: [hurricaneCsvLayer],
                 ground: "world-elevation"
             });
 
@@ -120,6 +121,8 @@
                 if (document.getElementById("Nature").value)
                     hurricaneQuery += ` and Nature = ' ${String(document.getElementById("Nature").value)}' `;
 
+                if (document.getElementById("Name").value)
+                    hurricaneQuery += ` and Name = '${String(document.getElementById("Nature").value).toUpperCase()}' `;
                 console.log(document.getElementById("Category").value);
                 console.log(document.getElementById("Nature").value);
                 console.log(document.getElementById("MinYear").value);
@@ -135,7 +138,7 @@
 
 <body>
     <div class='container-fluid' id="selectDiv">
-        <div class="row m-4">
+        <!-- <div class="row m-4">
             <div class="col-lg-1">
                 <h2>Filters</h2>
             </div>
@@ -163,6 +166,9 @@
                 <input name="MinYear" id="MinYear" type="range" value="1950" min="1950" max="2015" oninput="this.nextElementSibling.value = this.value">
                 <output>1950</output>
             </div>
+            <div class="col-lg-2">
+                <input type="text" name="Name" id="Name" class="form-control" placeholder="Name">
+            </div>
             <div class="col-lg-1">
                 <button id="Apply" type="button" class='btn btn-danger' onclick="changeQuery(this.id)">Apply</button>
             </div>
@@ -170,9 +176,52 @@
                 <button id="Clear" type="button" class="btn btn-secondary" onclick="changeQuery(this.id)">Clear</button>
             </div>
 
+        </div> -->
+        <div class="row">
+            <form class="row row-cols-lg-auto m-4 align-items-center">
+                <div class="col-12">
+                    <h2>Filters</h2>
+                </div>
+                <div class="col-12">
+                    <select name="Category" id="Category" class="form-select">
+                        <option selected value="">Category</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+                </div>
+
+                <div class="col-12">
+                    <select name="Nature" id="Nature" class="form-select">
+                        <option selected value="">Nature</option>
+                        <option value="TS">TS</option>
+                        <option value="SS">SS</option>
+                        <option value="ET">ET</option>
+                        <option value="NR">NR</option>
+                    </select>
+                </div>
+
+                <div class="col-12">
+                    <label for="MinYear">Minimum Year</label>
+                    <input name="MinYear" id="MinYear" type="range" value="1950" min="1950" max="2015" oninput="this.nextElementSibling.value = this.value">
+                    <output>1950</output>
+                </div>
+
+                <div class="col-12">
+                    <input type="text" name="Name" id="Name" class="form-control" placeholder="Name">
+                </div>
+                <div class="col-12">
+                    <button id="Apply" type="button" class='btn btn-danger' onclick="changeQuery(this.id)">Apply</button>
+                </div>
+                <div class="col-12">
+                    <button id="Clear" type="button" class="btn btn-secondary" onclick="changeQuery(this.id)">Clear</button>
+                </div>
+            </form>
         </div>
+
         <hr style="width: 50%; margin-left: 25%;">
-        <div class="row"></div>
 
     </div>
     <div id="viewDiv"></div>
