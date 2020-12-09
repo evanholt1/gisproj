@@ -38,8 +38,8 @@
     <script src="https://js.arcgis.com/4.9/"></script>
 
     <script>
-        let query = "";
-        let csvLayer;
+        let hurricaneQuery = "";
+        let hurricaneCsvLayer;
         require([
             "esri/Map",
             "esri/layers/CSVLayer",
@@ -52,29 +52,25 @@
             SceneView,
             urlUtils
         ) {
-            document.getElementById("Apply").addEventListener("click", changeQuery);
-            document.getElementById("Clear").addEventListener("click", changeQuery);
-
             var url =
-                "https://gisproj.herokuapp.com/csv";
+                "https://gisproj.herokuapp.com/hurricane";
 
             var template = {
                 title: "Hurricane Info",
                 content: "Magnitude {mag} {type} hit {place} on {time}."
             };
 
-            csvLayer = new CSVLayer({
+            hurricaneCsvLayer = new CSVLayer({
                 url: url,
-                copyright: "USGS Earthquakes",
                 popupTemplate: template,
             });
 
-            csvLayer.definitionExpression = query;
+            hurricaneCsvLayer.definitionExpression = hurricaneQuery;
 
-            csvLayer.renderer = {
-                type: "simple", // autocasts as new SimpleRenderer()
+            hurricaneCsvLayer.renderer = {
+                type: "simple",
                 symbol: {
-                    type: "simple-marker", // autocasts as new PointSymbol3D()
+                    type: "simple-marker",
                     color: [250, 250, 10],
                     outline: {
                         color: [255, 128, 128],
@@ -85,41 +81,37 @@
 
             var map = new Map({
                 basemap: "topo-vector",
-                layers: [csvLayer],
+                layers: [hurricaneCsvLayer],
                 ground: "world-elevation"
             });
 
             var view = new SceneView({
                 container: "viewDiv",
-                center: [138, 35],
                 scale: 50000000,
+                center: [-101.17, 21.78],
                 map: map
             });
         });
 
-        function baseMapSelect() {
-            console.log(map);
-
-        }
-
-        function changeQuery() {
-            console.log(csvLayer)
-            buttonId = event.target.id;
+        function changeQuery(buttonId) {
             if (buttonId == "Apply") {
-                query = `year >= ${String(document.getElementById("MinYear").value)} `;
+                hurricaneQuery = `year >= ${String(document.getElementById("MinYear").value)} `;
+
                 if (document.getElementById("Category").value)
-                    query += `and Category = ${String(document.getElementById("Category").value)}`;
+                    hurricaneQuery += `and Category = ${String(document.getElementById("Category").value)}`;
+
                 if (document.getElementById("Nature").value)
-                    query += ` and Nature = ' ${String(document.getElementById("Nature").value)}' `;
+                    hurricaneQuery += ` and Nature = ' ${String(document.getElementById("Nature").value)}' `;
 
                 console.log(document.getElementById("Category").value);
                 console.log(document.getElementById("Nature").value);
                 console.log(document.getElementById("MinYear").value);
+
             } else if (buttonId == "Clear") {
-                query = "year >= 1950";
+                hurricaneQuery = "year >= 1950";
             }
-            csvLayer.definitionExpression = query;
-            console.log(csvLayer.definitionExpression)
+
+            hurricaneCsvLayer.definitionExpression = hurricaneQuery;
         }
     </script>
 </head>
@@ -155,10 +147,10 @@
                 <output>1950</output>
             </div>
             <div class="col-lg-1">
-                <button id="Apply" type="button" class='btn btn-danger'>Apply</button>
+                <button id="Apply" type="button" class='btn btn-danger' onclick="changeQuery(this.id)">Apply</button>
             </div>
             <div class="col-lg-1">
-                <button id="Clear" type="button" class="btn btn-secondary">Clear</button>
+                <button id="Clear" type="button" class="btn btn-secondary" onclick="changeQuery(this.id)">Clear</button>
             </div>
 
         </div>
