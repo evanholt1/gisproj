@@ -26,7 +26,7 @@
         #viewDiv {
             padding: 0;
             margin: 0;
-            height: 70%;
+            height: 80%;
             width: 100%;
         }
     </style>
@@ -57,7 +57,8 @@
 
             var template = {
                 title: "Hurricane Info",
-                content: "Magnitude {mag} {type} hit {place} on {time}."
+                content: `Category {Category} {Nature} Hurricane occured {place} at {day}/{month}/{year}.,
+part of Hurricane {Name}`
             };
 
             hurricaneCsvLayer = new CSVLayer({
@@ -87,8 +88,8 @@
 
             var view = new SceneView({
                 container: "viewDiv",
+                center: [138, 35],
                 scale: 50000000,
-                center: [-101.17, 21.78],
                 map: map
             });
         });
