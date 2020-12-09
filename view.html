@@ -5,9 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
     <title>Hurricane Map</title>
-    <link rel="icon" 
-    type="image/png" 
-    href="./favicon.png">
+    <link rel="icon" type="image/png" href="./favicon.png">
     <style>
         html,
         body {
@@ -30,17 +28,20 @@
             margin: 0;
             height: 80%;
             width: 100%;
+            background-color: black;
         }
+        
         .ui-autocomplete {
             max-height: 100px;
             overflow-y: auto;
             /* prevent horizontal scrollbar */
-             overflow-x: hidden;
+            overflow-x: hidden;
         }
-
     </style>
 
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.17/esri/themes/dark-red/main.css" />
 
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
@@ -48,95 +49,131 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
 
-    <link rel="stylesheet" href="https://js.arcgis.com/4.9/esri/css/main.css">
-    <script src="https://js.arcgis.com/4.9/"></script>
 
-    
+    <script src="https://js.arcgis.com/4.17/"></script>
+
+
 
     <script type="module">
-        import {hurrNames} from './hurrNames.js'
+        import {
+            hurrNames
+        } from './hurrNames.js'
         let hurricaneQuery = "";
         let hurricaneCsvLayer;
-
         require([
-            "esri/Map",
+            "esri/WebMap",
             "esri/layers/CSVLayer",
             "esri/views/MapView",
-            "esri/core/urlUtils",
+            "esri/widgets/Legend",
+            "esri/widgets/Expand",
             "dojo/domReady"
-        ], function(
-            Map,
-            CSVLayer,
-            MapView,
-            urlUtils
-        ) {
+        ], function(WebMap, CSVLayer, MapView, Legend, Expand) {
             hurricaneCsvLayer = new CSVLayer({
+                title: "Hurricanes",
                 url: "https://gisproj.herokuapp.com/hurricane",
                 popupTemplate: {
-                    title: "Hurricane Info",
-                    content: 'Category {Category} {Nature} Hurricane occured {place} at {day}/{month}/{year}, part of Hurricane {Name}'
+                    title: "Hurricane {Name}",
+                    content: [{
+                        type: "text",
+                        text: "Category {Category} storm. Occurred at {ISO_time}."
+                    }, {
+                        type: "fields",
+                        fieldInfos: [{
+                            fieldName: "wmo_pres",
+                            label: "Pressure"
+                        }, {
+                            fieldName: "wmo_wind",
+                            label: "Wind Speed (mph)"
+                        }]
+                    }],
+                    fieldInfos: [{
+                        fieldName: "ISO_time",
+                        format: {
+                            dateFormat: "short-date-short-time"
+                        }
+                    }]
                 },
                 renderer: {
-                    type: "simple",
-                    symbol: {
-                        type: "simple-marker",
-                        color: [250, 250, 10],
-                        outline: {
-                            color: [255, 128, 128],
-                            width: 0.5
-                        }
-                    },
+                    type: "unique-value",
+                    field: "Category",
+                    uniqueValueInfos: createUniqueValueInfos()
                 }
             });
 
-            document.getElementById("Apply").addEventListener("click", changeQuery);
-            document.getElementById("Clear").addEventListener("click", changeQuery);
-
             hurricaneCsvLayer.definitionExpression = hurricaneQuery;
 
-            var map = new Map({
-                basemap: "topo-vector",
-                //layers: [hurricaneCsvLayer, earthquakeCsvLayer],
+            function createUniqueValueInfos() {
+                const fireflyImages = [
+                    "cat1.png",
+                    "cat2.png",
+                    "cat3.png",
+                    "cat4.png",
+                    "cat5.png"
+                ];
+
+                const baseUrl =
+                    "https://arcgis.github.io/arcgis-samples-javascript/sample-data/";
+
+                return fireflyImages.map(function(url, i) {
+                    return {
+                        value: i + 1, // Category number
+                        symbol: {
+                            type: "picture-marker",
+                            url: baseUrl + url
+                        }
+                    };
+                });
+            }
+
+            const map = new WebMap({
+                basemap: {
+                    portalItem: {
+                        id: "3113eacc129942b4abde490a51aeb33f"
+                    }
+                },
                 layers: [hurricaneCsvLayer]
             });
-
             var view = new MapView({
                 container: "viewDiv",
                 map: map,
                 center: [138, 35],
                 zoom: 4,
             });
+
+            const legendExpand = new Expand({
+                view: view,
+                content: new Legend({
+                    view: view,
+                    style: "card"
+                })
+            });
+
+            view.ui.add(legendExpand, "top-left");
+
+            document.getElementById("Apply").addEventListener("click", changeQuery);
+            document.getElementById("Clear").addEventListener("click", changeQuery);
         });
 
         function changeQuery(buttonId) {
             buttonId = event.target.id;
-
             if (buttonId == "Apply") {
                 hurricaneQuery = `year >= ${String(document.getElementById("MinYear").value)} `;
-
                 if (document.getElementById("Category").value)
                     hurricaneQuery += `and Category = ${String(document.getElementById("Category").value)}`;
-
-                if (document.getElementById("Nature").value)
-                    hurricaneQuery += ` and Nature = ' ${String(document.getElementById("Nature").value)}' `;
-
+                if (document.getElementById("Nature").value) hurricaneQuery += ` and Nature = ' ${String(document.getElementById("Nature").value)}' `;
                 if (document.getElementById("Name").value)
                     hurricaneQuery += ` and Name = '${String(document.getElementById("Name").value).toUpperCase()}' `;
-
             } else if (buttonId == "Clear") {
                 hurricaneQuery = "year >= 1950";
-
                 document.getElementById("Category").selectedIndex = 0;
                 document.getElementById("Nature").selectedIndex = 0;
                 document.getElementById("MinYear").value = 1950;
                 document.getElementById("rangeOutput").value = 1950;
                 document.getElementById("Name").value = "";
             }
-
             hurricaneCsvLayer.definitionExpression = hurricaneQuery;
         }
-
-        $( "#Name" ).autocomplete({
+        $("#Name").autocomplete({
             source: hurrNames
         });
     </script>
@@ -144,45 +181,6 @@
 
 <body>
     <div class='container-fluid' id="selectDiv">
-        <!-- <div class="row m-4">
-            <div class="col-lg-1">
-                <h2>Filters</h2>
-            </div>
-            <div class="col-lg-2">
-                <select name="Category" id="Category" class="form-select">
-                    <option selected value="">Category</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                </select>
-            </div>
-            <div class="col-lg-2">
-                <select name="Nature" id="Nature" class="form-select">
-                    <option selected value="">Nature</option>
-                    <option value="TS">TS</option>
-                    <option value="SS">SS</option>
-                    <option value="ET">ET</option>
-                    <option value="NR">NR</option>
-                </select>
-            </div>
-            <div class="col-lg-2">
-                <label for="MinYear">Minimum Year</label>
-                <input name="MinYear" id="MinYear" type="range" value="1950" min="1950" max="2015" oninput="this.nextElementSibling.value = this.value">
-                <output>1950</output>
-            </div>
-            <div class="col-lg-2">
-                <input type="text" name="Name" id="Name" class="form-control" placeholder="Name">
-            </div>
-            <div class="col-lg-1">
-                <button id="Apply" type="button" class='btn btn-danger' onclick="changeQuery(this.id)">Apply</button>
-            </div>
-            <div class="col-lg-1">
-                <button id="Clear" type="button" class="btn btn-secondary" onclick="changeQuery(this.id)">Clear</button>
-            </div>
-
-        </div> -->
         <div class="row">
             <form class="row row-cols-lg-auto m-4 align-items-center">
                 <div class="col-12">
@@ -219,10 +217,10 @@
                     <input type="text" name="Name" id="Name" class="form-control ui-widget" placeholder="Name">
                 </div>
                 <div class="col-12">
-                    <button id="Apply" type="button" class='btn btn-danger' >Apply</button>
+                    <button id="Apply" type="button" class='btn btn-danger'>Apply</button>
                 </div>
                 <div class="col-12">
-                    <button id="Clear" type="button" class="btn btn-secondary" >Clear</button>
+                    <button id="Clear" type="button" class="btn btn-secondary">Clear</button>
                 </div>
             </form>
         </div>
