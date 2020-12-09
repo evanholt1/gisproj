@@ -129,6 +129,12 @@
 
             } else if (buttonId == "Clear") {
                 hurricaneQuery = "year >= 1950";
+
+                document.getElementById("Category").selectedIndex = 0;
+                document.getElementById("Nature").selectedIndex = 0;
+                document.getElementById("MinYear").value = 1950;
+                document.getElementById("rangeOutput").value = 1950;
+                document.getElementById("Name").value = "";
             }
 
             hurricaneCsvLayer.definitionExpression = hurricaneQuery;
@@ -206,7 +212,7 @@
                 <div class="col-12">
                     <label for="MinYear">Minimum Year</label>
                     <input name="MinYear" id="MinYear" type="range" value="1950" min="1950" max="2015" oninput="this.nextElementSibling.value = this.value">
-                    <output>1950</output>
+                    <output id='rangeOutput'>1950</output>
                 </div>
 
                 <div class="col-12">
