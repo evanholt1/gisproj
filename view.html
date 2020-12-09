@@ -54,9 +54,7 @@
     <script type="module">
         import {hurrNames} from './hurrNames.js'
         let hurricaneQuery = "";
-        //let earthquakeQuery = "";
         let hurricaneCsvLayer;
-        //let earthquakeCsvLayer;
 
         require([
             "esri/Map",
@@ -91,27 +89,8 @@
 
             document.getElementById("Apply").addEventListener("click", changeQuery);
             document.getElementById("Clear").addEventListener("click", changeQuery);
-            // earthquakeCsvLayer = new CSVLayer({
-            //     url: "https://gisproj.herokuapp.com/earthquake",
-            //     popupTemplate: {
-            //         title: "Earthquake Info",
-            //         content: "Magnitude {mag} {type} hit {place} on {time}."
-            //     },
-            //     renderer: {
-            //         type: "simple",
-            //         symbol: {
-            //             type: "simple-marker",
-            //             color: [250, 15, 10],
-            //             outline: {
-            //                 color: [0, 0, 0],
-            //                 width: 0.5
-            //             }
-            //         },
-            //     }
-            // })
 
             hurricaneCsvLayer.definitionExpression = hurricaneQuery;
-            //earthquakeCsvLayer.definitionExpression = earthquakeQuery;
 
             var map = new Map({
                 basemap: "topo-vector",
@@ -129,7 +108,7 @@
 
         function changeQuery(buttonId) {
             buttonId = event.target.id;
-            
+
             if (buttonId == "Apply") {
                 hurricaneQuery = `year >= ${String(document.getElementById("MinYear").value)} `;
 
@@ -141,10 +120,6 @@
 
                 if (document.getElementById("Name").value)
                     hurricaneQuery += ` and Name = '${String(document.getElementById("Name").value).toUpperCase()}' `;
-
-                console.log(document.getElementById("Category").value);
-                console.log(document.getElementById("Nature").value);
-                console.log(document.getElementById("MinYear").value);
 
             } else if (buttonId == "Clear") {
                 hurricaneQuery = "year >= 1950";
