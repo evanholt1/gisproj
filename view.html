@@ -89,6 +89,8 @@
                 }
             });
 
+            document.getElementById("Apply").addEventListener("click", changeQuery);
+            document.getElementById("Clear").addEventListener("click", changeQuery);
             // earthquakeCsvLayer = new CSVLayer({
             //     url: "https://gisproj.herokuapp.com/earthquake",
             //     popupTemplate: {
@@ -126,6 +128,8 @@
         });
 
         function changeQuery(buttonId) {
+            buttonId = event.target.id;
+            
             if (buttonId == "Apply") {
                 hurricaneQuery = `year >= ${String(document.getElementById("MinYear").value)} `;
 
@@ -238,10 +242,10 @@
                     <input type="text" name="Name" id="Name" class="form-control ui-widget" placeholder="Name">
                 </div>
                 <div class="col-12">
-                    <button id="Apply" type="button" class='btn btn-danger' onclick="changeQuery(this.id)">Apply</button>
+                    <button id="Apply" type="button" class='btn btn-danger' >Apply</button>
                 </div>
                 <div class="col-12">
-                    <button id="Clear" type="button" class="btn btn-secondary" onclick="changeQuery(this.id)">Clear</button>
+                    <button id="Clear" type="button" class="btn btn-secondary" >Clear</button>
                 </div>
             </form>
         </div>
