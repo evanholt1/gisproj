@@ -39,58 +39,74 @@
 
     <script>
         let hurricaneQuery = "";
+        let earthquakeQuery = "";
         let hurricaneCsvLayer;
+        let earthquakeCsvLayer;
+
         require([
             "esri/Map",
             "esri/layers/CSVLayer",
-            "esri/views/SceneView",
+            "esri/views/MapView",
             "esri/core/urlUtils",
             "dojo/domReady"
         ], function(
             Map,
             CSVLayer,
-            SceneView,
+            MapView,
             urlUtils
         ) {
-            var url =
-                "https://gisproj.herokuapp.com/hurricane";
-
-            var template = {
-                title: "Hurricane Info",
-                content: `Category {Category} {Nature} Hurricane occured {place} at {day}/{month}/{year}.,
-part of Hurricane {Name}`
-            };
-
             hurricaneCsvLayer = new CSVLayer({
-                url: url,
-                popupTemplate: template,
+                url: "https://gisproj.herokuapp.com/hurricane",
+                popupTemplate: {
+                    title: "Hurricane Info",
+                    content: 'Category {Category} {Nature} Hurricane occured {place} at {day}/{month}/{year}, part of Hurricane {Name}'
+                },
+                renderer: {
+                    type: "simple",
+                    symbol: {
+                        type: "simple-marker",
+                        color: [250, 250, 10],
+                        outline: {
+                            color: [255, 128, 128],
+                            width: 0.5
+                        }
+                    },
+                }
             });
 
-            hurricaneCsvLayer.definitionExpression = hurricaneQuery;
-
-            hurricaneCsvLayer.renderer = {
-                type: "simple",
-                symbol: {
-                    type: "simple-marker",
-                    color: [250, 250, 10],
-                    outline: {
-                        color: [255, 128, 128],
-                        width: 0.5
-                    }
+            earthquakeCsvLayer = new CSVLayer({
+                url: "https://gisproj.herokuapp.com/earthquake",
+                popupTemplate: {
+                    title: "Earthquake Info",
+                    content: "Magnitude {mag} {type} hit {place} on {time}."
                 },
-            };
+                renderer: {
+                    type: "simple",
+                    symbol: {
+                        type: "simple-marker",
+                        color: [250, 15, 10],
+                        outline: {
+                            color: [0, 0, 0],
+                            width: 0.5
+                        }
+                    },
+                }
+            })
+
+            hurricaneCsvLayer.definitionExpression = hurricaneQuery;
+            earthquakeCsvLayer.definitionExpression = earthquakeQuery;
 
             var map = new Map({
                 basemap: "topo-vector",
-                layers: [hurricaneCsvLayer],
+                layers: [hurricaneCsvLayer, earthquakeCsvLayer],
                 ground: "world-elevation"
             });
 
-            var view = new SceneView({
+            var view = new MapView({
                 container: "viewDiv",
+                map: map,
                 center: [138, 35],
-                scale: 50000000,
-                map: map
+                zoom: 4,
             });
         });
 
