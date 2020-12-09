@@ -9,4 +9,7 @@ app.get('/hurricane', (req, res) => {
 app.get('/', (req, res) => {
     res.sendFile(__dirname + "/view.html")
 })
+
+app.use(express.static(path.join(__dirname,"public")))
+
 app.listen(process.env.PORT || 5000);
