@@ -121,7 +121,8 @@
                     hurricaneQuery += ` and Nature = ' ${String(document.getElementById("Nature").value)}' `;
 
                 if (document.getElementById("Name").value)
-                    hurricaneQuery += ` and Name = '${String(document.getElementById("Nature").value).toUpperCase()}' `;
+                    hurricaneQuery += ` and Name = '${String(document.getElementById("Name").value).toUpperCase()}' `;
+
                 console.log(document.getElementById("Category").value);
                 console.log(document.getElementById("Nature").value);
                 console.log(document.getElementById("MinYear").value);
