@@ -37,6 +37,26 @@
             /* prevent horizontal scrollbar */
             overflow-x: hidden;
         }
+
+        #sliderDiv {
+            width: 15%;
+            background-color: white;
+        }
+
+        #timeSlider {
+            width: 300px;
+            height: 300px;
+            position: absolute;
+  left: 100px;
+  top: 150px;
+  
+        }
+
+        /* .esri-time-slider__previous,
+        .esri-time-slider__animation,
+        .esri-time-slider__next {
+            display: none;
+        } */
     </style>
 
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
@@ -66,8 +86,9 @@
             "esri/views/MapView",
             "esri/widgets/Legend",
             "esri/widgets/Expand",
+            "esri/widgets/TimeSlider",
             "dojo/domReady"
-        ], function(WebMap, CSVLayer, MapView, Legend, Expand) {
+        ], function(WebMap, CSVLayer, MapView, Legend, Expand, TimeSlider ) {
             hurricaneCsvLayer = new CSVLayer({
                 title: "Hurricanes",
                 url: "https://gisproj.herokuapp.com/hurricane",
@@ -97,6 +118,14 @@
                     type: "unique-value",
                     field: "Category",
                     uniqueValueInfos: createUniqueValueInfos()
+                },
+                timeInfo: {
+                    startField:"ISO_time",
+                    interval: {
+                    // set time interval to one day
+                        unit: "days",
+                        value: 1
+                    }
                 }
             });
 
@@ -147,8 +176,94 @@
                     style: "card"
                 })
             });
+            
+            // const timeSlider = new TimeSlider({
+            //     container: document.createElement("div"),
+            //     playRate: 50,
+            //     view:view
+                
+            // });
 
-            view.ui.add(legendExpand, "top-left");
+            var timeSlider = new TimeSlider({
+            stops : {
+                count:65
+            },
+            container: document.createElement("div"),
+            view: view,
+            // show data within a given time range
+            // in this case data within one year
+            mode: "time-window",
+            fullTimeExtent: { // entire extent of the timeSlider
+                start: new Date(1950, 7, 14),
+                end: new Date(2015, 4, 1)
+            },
+            values:[ // location of timeSlider thumbs
+                new Date(1950, 7, 14),
+                new Date(2015, 4, 1)
+            ],
+            // stops:{
+            //         count: 65,
+            //         timeExtent: {
+            //         start: Date(1950, 7, 14),
+            //         end: Date(2015, 4, 1)
+            //         }
+            //     }
+            });
+            const timeSliderExpand = new Expand({
+                expandTooltip:"Filter by Time",
+                expandIconClass: "esri-icon-calendar",
+                view: view,
+                content: timeSlider.container
+            })
+
+            view.ui.add([
+                {
+                    component: legendExpand,
+                    position: "top-left",
+                    index: 1
+                },
+                {
+                    component: timeSliderExpand,
+                    position: "top-right",
+                    index: 1
+                }
+            ]);
+
+        //     let timeLayerView;
+        //     view.whenLayerView(hurricaneCsvLayer).then(function (lv) {
+        //         timeLayerView = lv;
+        //   const start = new Date(1950, 7, 14);
+        //   timeSlider.fullTimeExtent = {
+        //     start: start,
+        //     end: hurricaneCsvLayer.timeInfo.fullTimeExtent.end
+        //   };
+        //   timeSlider.stops={
+        //             count: 65,
+        //             timeExtent: {
+        //             start: timeSlider.fullTimeExtent.start,
+        //             end: timeSlider.fullTimeExtent.end
+        //             }
+        //         };
+        //   const end = new Date(start);
+        //   end.setFullYear(end.getFullYear() + 10);
+        //   timeSlider.values = [start, end];
+        // });
+
+        // timeSlider.watch("timeExtent", function () {
+        //   timeLayerView.effect = {
+        //     filter: {
+        //       timeExtent: timeSlider.timeExtent,
+        //       geometry: view.extent
+        //     },
+        //     excludedEffect: "opacity(0%)"
+        //   };
+        // });
+
+            /*
+            *************************************************
+                            QUERY BUILDER
+            *************************************************
+            */
 
             document.getElementById("Apply").addEventListener("click", changeQuery);
             document.getElementById("Clear").addEventListener("click", changeQuery);
@@ -208,9 +323,10 @@
                 </div>
 
                 <div class="col-12">
-                    <label for="MinYear">Minimum Year</label>
+                    <div id="sliderDiv"></div>
+                    <!-- <label for="MinYear">Minimum Year</label>
                     <input name="MinYear" id="MinYear" type="range" value="1950" min="1950" max="2015" oninput="this.nextElementSibling.value = this.value">
-                    <output id='rangeOutput'>1950</output>
+                    <output id='rangeOutput'>1950</output> -->
                 </div>
 
                 <div class="col-12">
