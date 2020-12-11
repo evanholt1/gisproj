@@ -19,14 +19,14 @@
         #selectDiv {
             padding: 0;
             margin: 0;
-            height: 20%;
+            height: 15%;
             width: 100%;
         }
         
         #viewDiv {
             padding: 0;
             margin: 0;
-            height: 80%;
+            height: 85%;
             width: 100%;
             background-color: black;
         }
@@ -43,12 +43,10 @@
             background-color: white;
         }
         
-        #timeSlider {
-            width: 300px;
-            height: 300px;
-            position: absolute;
-            left: 100px;
-            top: 150px;
+        #timeSlider,
+        #categorySlider {
+            width: 200px;
+            height: 200px;
         }
         /* .esri-time-slider__previous,
         .esri-time-slider__animation,
@@ -75,7 +73,7 @@
     <script type="module">
         import {
             hurrNames
-        } from './hurrNames.js'
+        } from './hurrNames.js';
         let hurricaneQuery = "";
         let hurricaneCsvLayer;
         require([
@@ -168,14 +166,6 @@
                 zoom: 4,
             });
 
-            const legendExpand = new Expand({
-                view: view,
-                content: new Legend({
-                    view: view,
-                    style: "card"
-                })
-            });
-
             var timeSlider = new TimeSlider({
                 stops: {
                     count: 65
@@ -200,6 +190,14 @@
                 content: timeSlider.container
             })
 
+            const legendExpand = new Expand({
+                view: view,
+                content: new Legend({
+                    view: view,
+                    style: "card"
+                })
+            });
+
             view.ui.add([{
                 component: legendExpand,
                 position: "top-left",
@@ -218,28 +216,63 @@
             document.getElementById("Apply").addEventListener("click", changeQuery);
             document.getElementById("Clear").addEventListener("click", changeQuery);
         });
-
         function changeQuery(buttonId) {
-
             // FIX THiS. CURRENTLY NOT WORKING.
             // change to adding to array, then a for loop, then final query string
 
             buttonId = event.target.id;
+            let currentQuery = {};
+
             if (buttonId == "Apply") {
-                hurricaneQuery = ``;
                 if (document.getElementById("Category").value)
-                    hurricaneQuery += `Category = ${String(document.getElementById("Category").value)}`;
-                if (document.getElementById("Nature").value) hurricaneQuery += ` and Nature = ' ${String(document.getElementById("Nature").value)}' `;
+                    currentQuery.Category = document.getElementById("Category").value;
+                    //hurricaneQuery += `Category = ${String(document.getElementById("Category").value)}`;
+
+                if (document.getElementById("Nature").value) 
+                    currentQuery.Nature = document.getElementById("Nature").value;
+                //hurricaneQuery += ` and Nature = ' ${String(document.getElementById("Nature").value)}' `;
+
                 if (document.getElementById("Name").value)
-                    hurricaneQuery += ` and Name = '${String(document.getElementById("Name").value).toUpperCase()}' `;
+                    currentQuery.Name = document.getElementById("Name").value;
+                    //hurricaneQuery += ` and Name = '${String(document.getElementById("Name").value).toUpperCase()}' `;
+
+                let queryEntriesArray = Object.entries(currentQuery);
+
+                if(!queryEntriesArray.length)
+                    hurricaneQuery = ``;
+                else 
+                    hurricaneQuery = queryEntriesArray.reduce((acc,currVal,index) => {
+                        if(currVal[0] == "Category") {
+                            if(index == 0) {
+                                return String(`${acc[0]} = ${acc[1]} `);
+                            }
+                            else return acc + String(`and ${currVal[0]} = ${currVal[1]} `);
+                        }
+                        else if(currVal[0] == "Nature") {
+                            if(index == 0) {
+                                return String(`${acc[0]} = ' ${acc[1]}' `);
+                            }
+                            else return acc + String(`and ${currVal[0]} = ' ${currVal[1]}' `);
+                        } 
+                        else {
+                            if(index == 0) {
+                                return String(`${acc[0]} = '${acc[1]}' `);
+                            }
+                            else return acc + String(`and ${currVal[0]} = '${currVal[1]}' `);
+                        }
+                        
+                    },queryEntriesArray[0]);
+                
+                    
+                console.log(`query is ${hurricaneQuery}`);
             } else if (buttonId == "Clear") {
                 hurricaneQuery = "";
                 document.getElementById("Category").selectedIndex = 0;
                 document.getElementById("Nature").selectedIndex = 0;
                 document.getElementById("Name").value = "";
             }
+
             hurricaneCsvLayer.definitionExpression = hurricaneQuery;
-            console.log(hurricaneQuery)
         }
         $("#Name").autocomplete({
             source: hurrNames
