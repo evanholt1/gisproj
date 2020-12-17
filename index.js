@@ -9,10 +9,15 @@ app.use(cors())
 app.get('/hurricane', (req, res) => {
     res.download(__dirname + '/hurricanes.csv');
 })
+
 app.get('/', (req, res) => {
     res.sendFile(__dirname + "/view.html")
 })
 
-app.use(express.static(path.join(__dirname,"public")))
+app.get('/cities', (req, res) => {
+    res.download(__dirname + '/US-Largest-1000-Cities.csv');
+})
+
+app.use(express.static(path.join(__dirname, "public")))
 
 app.listen(process.env.PORT || 5000);
